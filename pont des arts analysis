@@ -18,7 +18,7 @@ fplot(M, [0 2.8], 'r-', 'LineWidth', 2);
 xlabel('Position along the beam (m)');
 ylabel('Bending Moment (Nm)');
 title('Leonel Rodriguez Bending Moment Diagram');
-exportgraphics(gcf, 'figures/shear_moment_diagram.png', 'Resolution', 300);
+
 %% Maximum normal and shear stress
 % Calculate the maximum shear force and bending moment
 % Make numeric functions
@@ -95,7 +95,7 @@ grid on
 xlabel('Position along the beam, x (m)')
 ylabel('Deflection, y (mm)')
 title('Leonel Rodriguez Elastic Curve')
-exportgraphics(gcf, 'figures/elastic_curve.png', 'Resolution', 300);
+
 % Display results
 fprintf('\nElastic Curve Results\n')
 fprintf('C1 = %.4f N*m^2\n',C1_value)

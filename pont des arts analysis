@@ -1,0 +1,109 @@
+clc; clear; close all;
+%Shear and Moment diagram for simply supported beam (SI units)
+syms x
+v = 2570 -1300*x - 500*heaviside(x-0.7) - 500*heaviside(x-1.4) - 500*heaviside(x-2.1) + 2570*heaviside(x-2.8);
+%Moment is just the integral of shear so:
+M = int(v,x);
+%plot of v and M
+figure
+subplot(2,1,1);
+fplot(v, [0 2.8], 'b-', 'LineWidth', 2);
+xlabel('Position along the beam (m)');
+ylabel('Shear Force (N)');
+title('Leonel Rodriguez Shear Force Diagram');
+Ibar = 216667e-12; % moment of inertia in m^4
+
+subplot(2,1,2);
+fplot(M, [0 2.8], 'r-', 'LineWidth', 2);
+xlabel('Position along the beam (m)');
+ylabel('Bending Moment (Nm)');
+title('Leonel Rodriguez Bending Moment Diagram');
+exportgraphics(gcf, 'figures/shear_moment_diagram.png', 'Resolution', 300);
+%% Maximum normal and shear stress
+% Calculate the maximum shear force and bending moment
+% Make numeric functions
+Vfun = matlabFunction(v);
+Mfun = matlabFunction(M);
+
+% Evaluate along beam
+xvals = linspace(0,2.8,1000);
+Vvals = Vfun(xvals);
+Mvals = Mfun(xvals);
+
+% Max absolute values
+maxShear = max(abs(Vvals));
+maxMoment = max(abs(Mvals));
+
+% Calculate maximum normal stress using the bending moment
+sigmamax = ((maxMoment * 0.0225)/ Ibar);
+
+% Calculate Q and Shear Stress
+Qmax = 6.0313e-6; %calculation attached
+t = 0.010; %in m
+taumax = (maxShear*Qmax)/(Ibar*t);
+
+fprintf('Max shear force = %.2f N\n', maxShear)
+fprintf('Max bending moment = %.2f N*m\n', maxMoment)
+fprintf('Max normal stress = %.2f Pa\n', sigmamax)
+fprintf('Max normal stress = %.2f MPa\n', sigmamax/1e6)
+fprintf('Max shear stress = %.2f Pa\n', taumax)
+fprintf('Max shear stress = %.2f MPa\n', taumax/1e6)
+%% Elastic curve and maximum beam deflection
+
+E = 190e9;                 % Modulus of elasticity (Pa)
+EI = E*Ibar;
+
+% Constants of integration
+syms C1 C2
+
+% Beam differential equation:
+% EI*d^2y/dx^2 = M(x)
+
+EItheta = int(M,x) + C1;       % EI*dy/dx
+EIy = int(EItheta,x) + C2;     % EI*y
+
+% Boundary conditions for a simply supported beam:
+% y(0) = 0 and y(2.8) = 0
+eq1 = subs(EIy,x,0) == 0;
+eq2 = subs(EIy,x,2.8) == 0;
+
+constants = solve([eq1,eq2],[C1,C2]);
+
+C1_value = double(constants.C1);
+C2_value = double(constants.C2);
+
+% Substitute constants into the elastic curve equation
+y = simplify(subs(EIy,[C1,C2],...
+    [constants.C1,constants.C2])/EI);
+
+% Convert symbolic deflection equation into a numeric function
+yfun = matlabFunction(y,'Vars',x);
+
+% Evaluate deflection along the beam
+xDeflection = linspace(0,2.8,10000);
+yDeflection = yfun(xDeflection);
+
+% Find absolute maximum deflection
+[maxDeflection,index] = max(abs(yDeflection));
+xMaxDeflection = xDeflection(index);
+signedDeflection = yDeflection(index);
+
+% Plot elastic curve
+figure
+plot(xDeflection,1000*yDeflection,'r-','LineWidth',2)
+grid on
+xlabel('Position along the beam, x (m)')
+ylabel('Deflection, y (mm)')
+title('Leonel Rodriguez Elastic Curve')
+exportgraphics(gcf, 'figures/elastic_curve.png', 'Resolution', 300);
+% Display results
+fprintf('\nElastic Curve Results\n')
+fprintf('C1 = %.4f N*m^2\n',C1_value)
+fprintf('C2 = %.4f N*m^3\n',C2_value)
+fprintf('Absolute maximum deflection = %.6f m\n',maxDeflection)
+fprintf('Absolute maximum deflection = %.3f mm\n',...
+    maxDeflection*1000)
+fprintf('Signed maximum deflection = %.3f mm\n',...
+    signedDeflection*1000)
+fprintf('Maximum deflection location = %.3f m\n',...
+    xMaxDeflection)

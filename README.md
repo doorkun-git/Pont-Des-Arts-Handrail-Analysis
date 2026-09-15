@@ -43,6 +43,15 @@ The script generates:
 1. Shear-force and bending-moment diagrams
 2. An elastic-curve plot
 3. Command-window results for maximum stresses and deflection
+4. ## Results
+
+### Shear-Force and Bending-Moment Diagrams
+
+![Shear and moment diagrams](figures/shear_moment_diagram.png)
+
+### Elastic Curve
+
+![Elastic curve](figures/elastic_curve.png)
 
 ## Note
 
